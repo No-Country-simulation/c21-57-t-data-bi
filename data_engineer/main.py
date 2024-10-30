@@ -69,7 +69,8 @@ def get_data_from_csv(path:str)->pd.DataFrame:
         pd.DataFrame: Retornamos un dataframe con los datos cargados
     """
     logger = get_run_logger()
-    df = pd.read_csv(path)
+    data = pd.read_csv(path)
+    df = pd.DataFrame(data)
     
     if df is None:
         raise ValueError('No data found')
