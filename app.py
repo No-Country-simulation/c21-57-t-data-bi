@@ -8,12 +8,49 @@ import time
 import numpy as np
 import streamlit.components.v1 as components
 
+class Carrito:
+    """
+    Clase que representa un carrito de compras, con metodos para agregar, eliminar y obtener los items del carrito
+    """
+    def __init__(self):
+        self.__carrito = []
+
+    def vaciar_carrito(self):
+        self.__carrito = []
+        
+    def agregar_item(self, item):
+        self.__carrito.append(item)
+    
+    def eliminar_item(self, item):
+        if item in self.__carrito:
+            self.__carrito.remove(item)
+    
+    def obtener_carrito(self):
+        return self.__carrito
+    
+class ItemCarrito:
+    """
+    Clase que representa un item en el carrito de compras
+    """
+    def __init__(self, producto,cantidad, precio_unitario, pais):
+        self.producto = producto
+        self.cantidad = cantidad
+        self.precio_unitario = precio_unitario
+        self.pais = pais
+        
+    def __str__(self):
+        total = self.precio_unitario * self.cantidad
+        return f"{self.producto} ({self.pais}) - {self.cantidad} unidades x £{self.precio_unitario:,.2f}/u = £{total:,.2f}"
+        
+    def calcular_total(self):
+        return item.cantidad * item.precio_unitario
+
+
 st.set_page_config(page_title="Analisis de abandono de carrito", 
                    layout="centered",
-                   page_icon="🛒")
+                   page_icon="🛒"
+                   )
                    
-def borrar_carrito():
-    st.session_state.carrito = []
 
 @st.cache_resource
 def load_model():
@@ -33,19 +70,32 @@ def load_data()->tuple[pd.DataFrame]:
     Returns:
         Tuple[pd.DataFrame]: Devuelve un tuple con 3 dataframes
     """
-    df_canceladas = pd.read_parquet('data/silver/transacciones_canceladas.parquet')
-    df_concretadas = pd.read_parquet('data/silver/transacciones_concretadas.parquet')
-    df_ambas = pd.concat([df_canceladas, df_concretadas])
+    try:
+        df_canceladas = pd.read_parquet('data/silver/transacciones_canceladas.parquet')
+        df_concretadas = pd.read_parquet('data/silver/transacciones_concretadas.parquet')
+        df_ambas = pd.concat([df_canceladas, df_concretadas])
+    except FileNotFoundError:
+        st.error("No se encontraron los archivos parquet en la carpeta data/silver")
+        return None, None, None
+    
     return df_canceladas, df_concretadas, df_ambas
 
 df_canceladas, df_concretadas, df_ambas = load_data()
+
+global paises
+global opciones_paises
+    
+paises = df_ambas['Country'].unique()
+opciones_paises = paises.tolist()
+opciones_paises.insert(0, 'Todos')
 
 col1, col2 = st.columns([4, 1])
 with col1:
 
     st.markdown(
         body="""<h1 style="text-align: center; color: #1c95cd;">Análisis de abandono de carrito</h1>""",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
+        
     )
     
 with col2:    
@@ -105,7 +155,6 @@ menu = option_menu(menu_title=None,
 
 st.session_state.selected_menu = menu
 
-
 match menu:
     case "Informacion":
         st.write('Informacion')
@@ -129,16 +178,12 @@ match menu:
             case 'Concretadas':
                 df = df_concretadas
 
-        df_paises = df['Country'].unique()
-        df_paises = df_paises.tolist()
-        # Insertamos un valor para mostrar todos los paises
-        df_paises.insert(0, 'Todos')
 
         # Filtro de pais, DEFAULT: Todos
         with col2:
-            pais = st.selectbox('Selecciona un país', df_paises, index=0)
+            pais = st.selectbox('Selecciona un país', opciones_paises, index=0)
 
-        if pais in df_paises and pais != 'Todos':
+        if pais in opciones_paises and pais != 'Todos':
             df = df[df['Country'] == pais]
 
         # Buscar transaccion especifica
@@ -214,15 +259,10 @@ match menu:
         
         # GRAFICO 3
         # Precio x Cantidad de los productos mas comprados en un pais seleccionado
-        st.write("Los 10 productos con mas $ Total recaudado en un país seleccionado")
-
-        df_paises = df_ambas['Country'].unique()
-        df_paises = df_paises.tolist()
-        # Insertamos un valor para mostrar todos los paises
-        df_paises.insert(0, 'Todos')
+        st.write("Los 10 productos con mas £ Totales recaudadas en un país seleccionado")
 
         # Filtro de país
-        pais_seleccionado = st.selectbox('Selecciona un país para ver los productos que mas generaron ganancias', df_paises)
+        pais_seleccionado = st.selectbox('Selecciona un país para ver los productos que mas generaron ganancias', opciones_paises)
 
         # Filtrar el dataframe por el país seleccionado
         if pais_seleccionado != 'Todos':
@@ -242,7 +282,7 @@ match menu:
             fig, ax = plt.subplots()
             df_productos_sorted = df_productos.sort_values(by='TotalRecaudado', ascending=True)
             ax.barh(df_productos_sorted['ProductName'], df_productos_sorted['TotalRecaudado']) 
-            ax.set_title(f'Precio x Cantidad: Productos que mas recaudaron de {pais_seleccionado}')
+            ax.set_title(f'Precio £ x Cantidad: Productos que mas recaudaron de {pais_seleccionado}')
             ax.set_xlabel('$ total recaudado')
             ax.set_ylabel('Producto')       
             st.pyplot(fig)
@@ -271,32 +311,30 @@ match menu:
         # It returns the cached object itself, which is shared across all reruns and sessions without copying or duplication. 
         # If you mutate an object that is cached using st.cache_resource, that mutation will exist across all reruns and sessions.
         
+        
+        # Graficos del modelo
+        
+        
         # Carrito para predecir
         
+        if not 'carrito' in st.session_state:
+            st.session_state.carrito = Carrito()
+            
         col1,col2 = st.columns([4,3])
-        
-        if "carrito" not in st.session_state:
-            st.session_state["carrito"] = []
         
         with col1:
             with st.form("formulario-predic"):
                 st.write("Ingrese productos al carrito para predecir: ")
                 
-                feature1 = st.number_input("Cantidad de Productos", min_value=1, max_value=10000)
-                feature2 = st.number_input("Precio x Unidad", min_value=1, max_value=10000)
-                feature3 = st.selectbox("Pais", df_ambas['Country'].unique())
-                feature4 = st.selectbox("Producto", df_ambas['ProductName'].unique())
-
+                producto_seleccionado = st.selectbox("Producto", df_ambas['ProductName'].unique())
+                cantidad_productos = st.number_input("Cantidad de Productos", min_value=1, max_value=10000)
+                precio_unitario = st.number_input("Precio x Unidad", min_value=1, max_value=10000)
+                pais_seleccionado = st.selectbox("Pais", df_ambas['Country'].unique())
                 
-                input_data = {
-                    "Cantidad de Productos": feature1,
-                    "Precio x Unidad": feature2,
-                    "Pais": feature3,
-                    "Producto": feature4
-                }
+                item = ItemCarrito(producto_seleccionado,cantidad_productos, precio_unitario, pais_seleccionado)
                 
                 if st.form_submit_button("Agregar al carrito",icon='🛒',):
-                    st.session_state["carrito"].append(input_data)
+                    st.session_state.carrito.agregar_item(item)
                 
         with col2:
             
@@ -306,25 +344,23 @@ match menu:
                 st.write("Carrito de compras",)
             with subcol2:
                 if st.button("Limpiar Carrito", key="limpiar",icon='🗑️'):
-                    borrar_carrito()
+                    st.session_state.carrito.vaciar_carrito()
             
-            if st.session_state["carrito"]:
-                df = st.session_state["carrito"]
-                for product in df:
-                    st.write(f"{product['Producto']} x {product['Cantidad de Productos']}(£{product['Precio x Unidad']}/u) = £{product['Precio x Unidad']*product['Cantidad de Productos']}")
-                df = pd.DataFrame(df)
+            if st.session_state.carrito.obtener_carrito():
+                carrito = st.session_state.carrito.obtener_carrito()
+                for item in carrito:
+                    st.write(item)
+                df = pd.DataFrame(carrito)
                 
         
         if st.button("Predecir carrito", key="predict",type='primary'):
-                if len(st.session_state["carrito"]) == 0:
+                if len(st.session_state.carrito.obtener_carrito()) == 0:
                     st.error("No hay productos en el carrito")
                 else:   
                     prediccion = True 
-                    borrar_carrito()
+                    st.session_state.carrito.vaciar_carrito()
                     if prediccion != 1:
                         st.error("Prediccion del Modelo: El Carrito sera cancelado")
                     else:
                         st.success("Prediccion del Modelo: El Carrito sera concretado")
                 
-        
-st.write('Desarrollado por: [Raphael Nicaise](https://www.linkedin.com/in/rapha%C3%ABl-nicaise-68025b27a/)')
