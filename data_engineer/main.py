@@ -115,7 +115,7 @@ def transform_df(df: pd.DataFrame)->pd.DataFrame:
 
 @task(
     name='divide_df_in_canceladas_y_concretadas',
-    description='Dividimos el dataframe en dos, uno con las transacciones canceladas, y otro con las transacciones concretadas'
+    description='Dividimos el dataframe en dos, uno con las transacciones canceladas, y otro con las transacciones concretadas '
 )
 def divide_df_in_canceladas_y_concretadas(df: pd.DataFrame)->tuple:
     """
