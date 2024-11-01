@@ -1,2 +1,3 @@
 data_engineer/pipeline.conf
 venv/
+*/__pycache__/
