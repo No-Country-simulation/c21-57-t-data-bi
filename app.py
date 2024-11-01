@@ -506,13 +506,11 @@ match menu:
                 self.__carrito = []
                 
             def agregar_item(self, item: 'ItemCarrito'):
-                if not isinstance(item, ItemCarrito):
-                    raise ValueError("El item debe ser una instancia de la clase ItemCarrito")
+
                 self.__carrito.append(item)
             
             def eliminar_item(self, item: 'ItemCarrito'):
-                if not isinstance(item, ItemCarrito):
-                    raise ValueError("El item debe ser una instancia de la clase ItemCarrito")
+                
                 if item in self.__carrito:
                     self.__carrito.remove(item)
             
