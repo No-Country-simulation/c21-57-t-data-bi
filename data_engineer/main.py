@@ -69,6 +69,10 @@ def get_data_from_csv(path:str)->pd.DataFrame:
         pd.DataFrame: Retornamos un dataframe con los datos cargados
     """
     logger = get_run_logger()
+    
+    if not path.endswith('.csv'):
+        raise ValueError('El archivo no es un csv')
+    
     data = pd.read_csv(path)
     df = pd.DataFrame(data)
     
@@ -111,7 +115,7 @@ def transform_df(df: pd.DataFrame)->pd.DataFrame:
 
 @task(
     name='divide_df_in_canceladas_y_concretadas',
-    description='Dividimos el dataframe en dos, uno con las transacciones canceladas, y otro con las transacciones concretadas'
+    description='Dividimos el dataframe en dos, uno con las transacciones canceladas, y otro con las transacciones concretadas '
 )
 def divide_df_in_canceladas_y_concretadas(df: pd.DataFrame)->tuple:
     """
@@ -154,7 +158,8 @@ def transform_df_to_parquet(df: pd.DataFrame, path: str):
 
 @flow(
     name='etl-flow',
-    description='Pipeline para extraer, transformar y cargar datos de un dataset de kaggle'
+    description='Pipeline para extraer, transformar y cargar datos de un dataset de kaggle',
+    
 )
 def etl():
     logger = get_run_logger()
