@@ -4,15 +4,15 @@ Objetivo: Analizar el comportamiento de los usuarios que
 abandonan el carrito de compras en un sitio web de e-commerce para identificar
 posibles razones y proponer estrategias de retención.
 
-Streamlit web app: [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=Streamlit&logoColor=fff)](https://c21-57-t-data-bi-carritoabandonado.streamlit.app/)<br>
+Streamlit web app: [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=Streamlit&logoColor=fff)](https://c21-57-t-data-bi-carritoabandonado.streamlit.app/)
+
 Dataset: [![Dataset](https://img.shields.io/badge/Dataset%20Kaggle-00599C?logo=kaggle&logoColor=fff)](https://www.kaggle.com/datasets/gabrielramos87/an-online-shop-business)
 ## Tabla de Contenidos
 
 - [Colaboradores y Stack del Proyecto](#colaboradores)
 - [Instalación y Ejecución](#instalación-y-ejecución)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-
-
+- [Streamlit Web App Docs](#streamlit-web-app-docs)
 
 ## Colaboradores
 - Raphael Nicaise: Data Engineer & Project Manager  [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/RaphaelNicaise) [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rapha%C3%ABl-nicaise-68025b27a/)
@@ -82,3 +82,14 @@ El proyecto se divide en 4 carpetas principales:
 - **/data_engineer**: Contiene el flujo de trabajo del ETL.
 - **/ml_developers**: Contiene los notebooks de los desarrolladores de ML.
 
+Ademas, el proyecto cuenta con: 
+- Un archivo **app.py** que contiene la aplicación web de Streamlit
+- Un archivo **requirements.txt** con las dependencias del proyecto.
+
+## Streamlit Web App Docs
+
+En la aplicación web de Streamlit se pueden encontrar las siguientes secciones:
+- **Informacion**: Donde se encuentra este mismo README.MD.
+- **Consultas**: Seccion donde tenemos algunos filtros para consultar datos.
+- **Visualizaciones**: Seccion donde se encuentran las visualizaciones de los datos.
+- **Resultados del Modelo**: Seccion donde se encuentran los resultados del modelo de ML. Se encuentran tanto graficos, como un carrito simulado en el que podemos predecir si, el carrito va a ser concretado o cancelado.
